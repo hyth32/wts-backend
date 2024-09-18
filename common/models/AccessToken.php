@@ -26,4 +26,18 @@ class AccessToken extends ActiveRecord
     {
         return $this->hasOne(User::class, ['id' => 'userId']);
     }
+
+    public static function generateAccessToken($userId)
+    {
+        $accessToken = new self();
+        $accessToken->userId = $userId;
+        $accessToken->accessToken = Yii::$app->security->generateRandomString();
+        $accessToken->expiresAt = time() + 3600;
+
+        if ($accessToken->save()) {
+            return $accessToken;
+        }
+
+        return null;
+    }
 }

@@ -37,28 +37,22 @@ return [
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
-	'db' => [
-	    'class' => 'yii\db\Connection',
-	    'dsn' => 'mysql:host=localhost;dbname=wtsBackend',
-	    'username' => 'hyth',
-	    'password' => '1',
-	    'charset' => 'utf8',
-	],
+    	'db' => [
+    	    'class' => 'yii\db\Connection',
+    	    'dsn' => 'mysql:host=localhost;dbname=wtsBackend',
+    	    'username' => 'hyth',
+    	    'password' => '1',
+    	    'charset' => 'utf8',
+    	],
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-		'POST /user/register' => 'user/register',
-		'POST /user/login' => 'user/login',
-'POST /user/register' => 'user/register',
-        'POST /user/login' => 'user/login',
-        'POST /post/publish' => 'post/publish',
-        'GET /user' => 'user/index',
-        'GET /user/view/<id:\d+>' => 'user/view',
-        'POST /user/create' => 'user/create',
-        'PUT /user/update/<id:\d+>' => 'user/update',
-        'DELETE /user/delete/<id:\d+>' => 'user/delete',
-            ],
+                'api/<controller>/<action>' => '<controller>/<action>',
+                'api/<controller>/<action>/<id:\d+>' => '<controller>/<action>',
+
+                '<controller>/<action>' => 'site/error',
+            ]
         ],
     ],
     'params' => $params,

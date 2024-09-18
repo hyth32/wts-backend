@@ -38,53 +38,50 @@ class PostController extends Controller
 
     public function actionCreate()
     {
-	Yii::$app->response->format = Response::FORMAT_JSON;
+    	Yii::$app->response->format = Response::FORMAT_JSON;
 
-	$requestBody = Yii::$app->request->getRawBody();
-	$request = json_decode($requestBody, true);
+    	$requestBody = Yii::$app->request->getRawBody();
+    	$request = json_decode($requestBody, true);
 
-	$accessToken = $request['accessToken'] ?? null;
-	$text = $request['text'] ?? null;
+    	$accessToken = $request['accessToken'] ?? null;
+    	$text = $request['text'] ?? null;
 
-	if (!$accessToken || !$text) {
-	    return [
-		'status' => 'error',
-		'message' => 'accessToken and text are required',
-	    ];
-	}
+    	if (!$accessToken || !$text) {
+    	    return [
+    		'status' => 'error',
+    		'message' => 'accessToken and text are required',
+    	    ];
+    	}
 
-	$tokenRecord = AccessToken::findOne(['accessToken' => $accessToken]);
-	if (!$tokenRecord || $tokenRecord->expiresAt < time()) {
-	    return [
-		'status' => 'error',
-		'message' => 'invalid or expired accessToken',
-	    ];
-	}
+    	$tokenRecord = AccessToken::findOne(['accessToken' => $accessToken]);
+    	if (!$tokenRecord || $tokenRecord->expiresAt < time()) {
+    	    return [
+    		'status' => 'error',
+    		'message' => 'invalid or expired accessToken',
+    	    ];
+    	}
 
-	$user = $tokenRecord->user;
-	if (!$user) {
-	    return [
-		'status' => 'error',
-		'message' => 'user not found',
-	    ];
-	}
+    	$user = $tokenRecord->user;
+    	if (!$user) {
+    	    return [
+    		'status' => 'error',
+    		'message' => 'user not found',
+    	    ];
+    	}
 
-	$post = new Post();
-	$post->userId = $user->id;
-	$post->text = $request['text'];
+    	$post = new Post();
+    	if ($post->createPost($user->id, $request['text'])) {
+    	    return [
+    		    'status' => 'success',
+    		    'message' => 'post created!',
+    	    ];
+    	}
 
-	if ($post -> save()) {
-	    return [
-		'status' => 'success',
-		'message' => 'post created!',
-	    ];
-	}
-
-	return [
-	    'success' => 'false',
-	    'message' => 'failed to create post',
-	    'errors' => $post->errors,
-	];
+    	return [
+    	    'success' => 'false',
+    	    'message' => 'failed to create post',
+    	    'errors' => $post->errors,
+    	];
     }
 
     public function actionGetPosts()
@@ -160,12 +157,7 @@ class PostController extends Controller
 		];
 	}
 
-	/**
-     * Lists all Post models.
-     *
-     * @return string
-     */
-	 public function actionIndex()
+	public function actionIndex()
     {
 		Yii::$app->response->format = Response::FORMAT_HTML;
         $dataProvider = new ActiveDataProvider([
@@ -187,12 +179,6 @@ class PostController extends Controller
         ]);
     }
 
-	/**
-     * Displays a single Post model.
-     * @param int $id
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionView($id)
     {
 		Yii::$app->response->format = Response::FORMAT_HTML;
@@ -201,13 +187,6 @@ class PostController extends Controller
         ]);
     }
 
-	/**
-     * Updates an existing Post model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
@@ -221,13 +200,6 @@ class PostController extends Controller
         ]);
     }
 
-	/**
-     * Deletes an existing Post model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
@@ -235,13 +207,6 @@ class PostController extends Controller
         return $this->redirect(['index']);
     }
 
-	/**
-     * Finds the Post model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id
-     * @return Post the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     protected function findModel($id)
     {
         if (($model = Post::findOne(['id' => $id])) !== null) {

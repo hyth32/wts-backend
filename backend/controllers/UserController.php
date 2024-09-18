@@ -9,6 +9,7 @@ use common\models\User;
 use common\models\AccessToken;
 use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\data\ActiveDataProvider;
 
 class UserController extends Controller
@@ -54,7 +55,7 @@ class UserController extends Controller
         $user = new User();
         if ($user->registerUser($name, $email, $password))
         {
-            $accessToken = AccessToken::generateAccessToken($user->id);
+            $accessToken = AccessToken::generateAccessToken($user->getId());
 
             if ($accessToken)
             {
@@ -94,6 +95,7 @@ class UserController extends Controller
 
         if ($user)
         {
+            Yii::$app->user->login($user);
             AccessToken::deleteAll(['userId' => $user->id]);
             $accessToken = AccessToken::generateAccessToken($user->id);
 
@@ -116,18 +118,14 @@ class UserController extends Controller
     public function actionIndex(): string
     {
 		Yii::$app->response->format = Response::FORMAT_HTML;
+
+        if (Yii::$app->user->identity === null || !Yii::$app->user->identity->isAdmin())
+        {
+            throw new ForbiddenHttpException('You are not allowed to access this page.');
+        }
+
         $dataProvider = new ActiveDataProvider([
             'query' => User::find(),
-            /*
-            'pagination' => [
-                'pageSize' => 50
-            ],
-            'sort' => [
-                'defaultOrder' => [
-                    'id' => SORT_DESC,
-                ]
-            ],
-            */
         ]);
 
         return $this->render('index', [

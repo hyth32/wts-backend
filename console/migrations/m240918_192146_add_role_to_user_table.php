@@ -3,16 +3,17 @@
 use yii\db\Migration;
 
 /**
- * Class m240917_141603_remove_createdat
+ * Class m240918_192146_add_role_to_user_table
  */
-class m240917_141603_remove_createdat extends Migration
+class m240918_192146_add_role_to_user_table extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-	return $this->dropColumn('{{%accessTokens}}', 'createdAt');
+        $this->addColumn('{{%user}}', 'role', $this->string()->defaultValue('user')->notNull());
+        $this->update('{{%user}}', ['role' => 'user']);
     }
 
     /**
@@ -20,8 +21,7 @@ class m240917_141603_remove_createdat extends Migration
      */
     public function safeDown()
     {
-        echo "m240917_141603_remove_createdat cannot be reverted.\n";
-
+        $this->dropColumn('{{%user}}', 'role');
         return false;
     }
 
@@ -34,7 +34,7 @@ class m240917_141603_remove_createdat extends Migration
 
     public function down()
     {
-        echo "m240917_141603_remove_createdat cannot be reverted.\n";
+        echo "m240918_192146_add_role_to_user_table cannot be reverted.\n";
 
         return false;
     }

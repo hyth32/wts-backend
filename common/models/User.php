@@ -11,6 +11,9 @@ use yii\web\IdentityInterface;
 
 class User extends ActiveRecord implements IdentityInterface
 {
+    const ROLE_USER = 'user';
+    const ROLE_ADMIN = 'admin';
+
     public static function tableName(): string
     {
         return '{{%user}}';
@@ -19,11 +22,16 @@ class User extends ActiveRecord implements IdentityInterface
     public function rules(): array
     {
     	return [
-            [['name', 'email', 'passwordHash', 'authKey'], 'required'],
+            [['name', 'email', 'passwordHash', 'authKey', 'role'], 'required'],
             ['email', 'email'],
             ['email', 'unique'],
-            [['name', 'passwordHash', 'authKey'], 'string', 'max' => 255],
+            [['name', 'passwordHash', 'authKey', 'role'], 'string', 'max' => 255],
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
     }
 
     public static function findIdentity($id): ?self
@@ -39,7 +47,7 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function getId(): ?int
     {
-        return $this->id();
+        return $this->id;
     }
 
     public function getAuthKey(): string
@@ -72,12 +80,18 @@ class User extends ActiveRecord implements IdentityInterface
     	return $this->hasMany(AccessToken::class, ['userId' => 'id']);
     }
 
-    public function registerUser($name, $email, $password): ?self
+    public static function findByEmail($email)
+    {
+        return static::findOne(['email' => $email]);
+    }
+
+    public function registerUser($name, $email, $password, $role = self::ROLE_ADMIN): ?self
     {
         $this->name = $name;
         $this->email = $email;
         $this->setPassword($password);
         $this->generateAuthKey();
+        $this->role = $role;
 
         if ($this->save())
         {

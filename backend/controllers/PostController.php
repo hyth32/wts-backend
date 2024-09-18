@@ -9,7 +9,9 @@ use common\models\AccessToken;
 use yii\web\Response;
 use yii\data\ActiveDataProvider;
 use yii\web\NotFoundHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 class PostController extends Controller
 {
@@ -26,6 +28,22 @@ class PostController extends Controller
                         'update' => ['PUT'],
                         'view' => ['GET'],
                         'index' => ['GET'],
+                    ],
+                ],
+                'access' => [
+                    'class' => AccessControl::class,
+                    'only' => ['index', 'view', 'update', 'delete'],
+                    'rules' => [
+                        [
+                            'allow' => true,
+                            'roles' => ['@'],
+                            'matchCallback' => function ($rule, $action) {
+                                return Yii::$app->user->identity->isAdmin();
+                            },
+                        ],
+                        [
+                            'allow' => false,
+                        ],
                     ],
                 ],
             ]
@@ -163,19 +181,10 @@ class PostController extends Controller
 
 	public function actionIndex(): string
     {
-		Yii::$app->response->format = Response::FORMAT_HTML;
+    	Yii::$app->response->format = Response::FORMAT_HTML;
+
         $dataProvider = new ActiveDataProvider([
             'query' => Post::find(),
-            /*
-            'pagination' => [
-                'pageSize' => 50
-            ],
-            'sort' => [
-                'defaultOrder' => [
-                    'id' => SORT_DESC,
-                ]
-            ],
-            */
         ]);
 
         return $this->render('index', [

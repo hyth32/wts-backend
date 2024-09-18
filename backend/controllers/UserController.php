@@ -11,6 +11,7 @@ use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\data\ActiveDataProvider;
+use yii\filters\AccessControl;
 
 class UserController extends Controller
 {
@@ -27,6 +28,22 @@ class UserController extends Controller
         		        'delete' => ['DELETE'],
 						'view' => ['GET'],
                 		'index' => ['GET'],
+                    ],
+                ],
+                'access' => [
+                    'class' => AccessControl::class,
+                    'only' => ['index', 'view', 'update', 'delete'],
+                    'rules' => [
+                        [
+                            'allow' => true,
+                            'roles' => ['@'],
+                            'matchCallback' => function ($rule, $action) {
+                                return Yii::$app->user->identity->isAdmin();
+                            },
+                        ],
+                        [
+                            'allow' => false,
+                        ],
                     ],
                 ],
             ]
@@ -95,7 +112,6 @@ class UserController extends Controller
 
         if ($user)
         {
-            Yii::$app->user->login($user);
             AccessToken::deleteAll(['userId' => $user->id]);
             $accessToken = AccessToken::generateAccessToken($user->id);
 
@@ -118,11 +134,6 @@ class UserController extends Controller
     public function actionIndex(): string
     {
 		Yii::$app->response->format = Response::FORMAT_HTML;
-
-        if (Yii::$app->user->identity === null || !Yii::$app->user->identity->isAdmin())
-        {
-            throw new ForbiddenHttpException('You are not allowed to access this page.');
-        }
 
         $dataProvider = new ActiveDataProvider([
             'query' => User::find(),

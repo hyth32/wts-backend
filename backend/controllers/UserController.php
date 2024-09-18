@@ -13,9 +13,6 @@ use yii\data\ActiveDataProvider;
 
 class UserController extends Controller
 {
-	/**
-     * @inheritDoc
-     */
     public function behaviors()
     {
         return array_merge(
@@ -46,7 +43,8 @@ class UserController extends Controller
         $email = $request['email'] ?? null;
         $password = $request['password'] ?? null;
 
-        if (!$name || !$email || !$password) {
+        if (!$name || !$email || !$password)
+        {
             return [
                 'status' => 'error',
                 'message' => 'name, email and password are required',
@@ -54,10 +52,12 @@ class UserController extends Controller
         }
 
         $user = new User();
-        if ($user->registerUser($name, $email, $password)) {
+        if ($user->registerUser($name, $email, $password))
+        {
             $accessToken = AccessToken::generateAccessToken($user->id);
 
-            if ($accessToken) {
+            if ($accessToken)
+            {
                 return [
                     'status' => 'success',
                     'accessToken' => $accessToken->accessToken,
@@ -82,7 +82,8 @@ class UserController extends Controller
         $email = $request['email'] ?? null;
         $password = $request['password'] ?? null;
 
-        if (!$email || !$password) {
+        if (!$email || !$password)
+        {
             return [
                 'status' => 'error',
                 'message' => 'email and password are required',
@@ -91,11 +92,13 @@ class UserController extends Controller
 
         $user = User::loginUser($email, $password);
 
-        if ($user) {
+        if ($user)
+        {
             AccessToken::deleteAll(['userId' => $user->id]);
             $accessToken = AccessToken::generateAccessToken($user->id);
 
-            if ($accessToken) {
+            if ($accessToken)
+            {
                 return [
                     'status' => 'success',
                     'accessToken' => $accessToken->accessToken,
@@ -144,7 +147,8 @@ class UserController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
+        if ($this->request->isPost && $model->load($this->request->post()) && $model->save())
+        {
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -162,7 +166,8 @@ class UserController extends Controller
 
     protected function findModel($id)
     {
-        if (($model = User::findOne(['id' => $id])) !== null) {
+        if (($model = User::findOne(['id' => $id])) !== null)
+        {
             return $model;
         }
 

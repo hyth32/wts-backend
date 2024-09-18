@@ -13,9 +13,6 @@ use yii\filters\VerbFilter;
 
 class PostController extends Controller
 {
-	 /**
-     * @inheritDoc
-     */
     public function behaviors()
     {
         return array_merge(
@@ -46,31 +43,35 @@ class PostController extends Controller
     	$accessToken = $request['accessToken'] ?? null;
     	$text = $request['text'] ?? null;
 
-    	if (!$accessToken || !$text) {
+    	if (!$accessToken || !$text)
+        {
     	    return [
-    		'status' => 'error',
-    		'message' => 'accessToken and text are required',
+        		'status' => 'error',
+        		'message' => 'accessToken and text are required',
     	    ];
     	}
 
     	$tokenRecord = AccessToken::findOne(['accessToken' => $accessToken]);
-    	if (!$tokenRecord || !$tokenRecord->isTokenValid()) {
+    	if (!$tokenRecord || !$tokenRecord->isTokenValid())
+        {
     	    return [
-    		'status' => 'error',
-    		'message' => 'invalid or expired accessToken',
+        		'status' => 'error',
+        		'message' => 'invalid or expired accessToken',
     	    ];
     	}
 
     	$user = $tokenRecord->user;
-    	if (!$user) {
+    	if (!$user)
+        {
     	    return [
-    		'status' => 'error',
-    		'message' => 'user not found',
+        		'status' => 'error',
+    	    	'message' => 'user not found',
     	    ];
     	}
 
     	$post = new Post();
-    	if ($post->createPost($user->id, $request['text'])) {
+    	if ($post->createPost($user->id, $request['text']))
+        {
     	    return [
     		    'status' => 'success',
     		    'message' => 'post created!',
@@ -97,7 +98,8 @@ class PostController extends Controller
 			->orderBy(['createdAt' => SORT_ASC])
 			->all();
 
-		if (empty($posts)) {
+		if (empty($posts))
+        {
 			return [
 				'status' => 'success',
 				'data' => [],
@@ -105,7 +107,8 @@ class PostController extends Controller
 	   		];
 		}
 
-		$serializedPosts = array_map(function ($post) {
+		$serializedPosts = array_map(function ($post)
+        {
 	    	return [
 				'id' => $post->id,
 				'userId' => $post->userId,
@@ -134,7 +137,8 @@ class PostController extends Controller
 			->orderBy(['createdAt' => SORT_ASC])
 			->all();
 
-		if (empty($posts)) {
+		if (empty($posts))
+        {
 			return [
 				'status' => 'success',
 				'data' => [],
@@ -142,7 +146,8 @@ class PostController extends Controller
 			];
 		}
 
-		$serializedPosts = array_map(function ($post) {
+		$serializedPosts = array_map(function ($post)
+        {
 			return [
 				'id' => $post->id,
 				'userId' => $post->userId,
@@ -191,7 +196,8 @@ class PostController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
+        if ($this->request->isPost && $model->load($this->request->post()) && $model->save())
+        {
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -209,7 +215,8 @@ class PostController extends Controller
 
     protected function findModel($id)
     {
-        if (($model = Post::findOne(['id' => $id])) !== null) {
+        if (($model = Post::findOne(['id' => $id])) !== null)
+        {
             return $model;
         }
 

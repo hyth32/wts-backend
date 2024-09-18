@@ -29,7 +29,8 @@ class Post extends ActiveRecord
 
     public function beforeSave($insert)
     {
-    	if ($insert) {
+    	if ($insert)
+        {
     	    $this->createdAt = time();
     	}
     	return parent::beforeSave($insert);
@@ -40,7 +41,8 @@ class Post extends ActiveRecord
         $this->userId = $userId;
         $this->text = $text;
 
-        if ($this->save()) {
+        if ($this->save())
+        {
             return $this;
         }
 

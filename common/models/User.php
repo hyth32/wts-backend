@@ -6,16 +6,17 @@ use Yii;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
+use yi\db\ActiveQuery;
 use yii\web\IdentityInterface;
 
 class User extends ActiveRecord implements IdentityInterface
 {
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%user}}';
     }
 
-    public function rules()
+    public function rules(): array
     {
     	return [
             [['name', 'email', 'passwordHash', 'authKey'], 'required'],
@@ -25,53 +26,53 @@ class User extends ActiveRecord implements IdentityInterface
         ];
     }
 
-    public static function findIdentity($id)
+    public static function findIdentity($id): ?self
     {
         return static::findOne($id);
     }
 
-    public static function findIdentityByAccessToken($token, $type = null)
+    public static function findIdentityByAccessToken($token, $type = null): ?self
     {
        // throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
 	    return static::findOne(['accessToken' => $token]);
     }
 
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id();
     }
 
-    public function getAuthKey()
+    public function getAuthKey(): string
     {
         return $this->authKey;
     }
 
-    public function validateAuthKey($authKey)
+    public function validateAuthKey($authKey): bool
     {
         return $this->getAuthKey() === $authKey;
     }
 
-    public function validatePassword($password)
+    public function validatePassword($password): bool
     {
         return Yii::$app->security->validatePassword($password, $this->passwordHash);
     }
 
-    public function setPassword($password)
+    public function setPassword($password): void
     {
         $this->passwordHash = Yii::$app->security->generatePasswordHash($password);
     }
 
-    public function generateAuthKey()
+    public function generateAuthKey(): void
     {
         $this->authKey = Yii::$app->security->generateRandomString();
     }
 
-    public function getAccessTokens()
+    public function getAccessTokens(): ActiveQuery
     {
     	return $this->hasMany(AccessToken::class, ['userId' => 'id']);
     }
 
-    public function registerUser($name, $email, $password)
+    public function registerUser($name, $email, $password): ?self
     {
         $this->name = $name;
         $this->email = $email;
@@ -86,7 +87,7 @@ class User extends ActiveRecord implements IdentityInterface
         return null;
     }
 
-    public static function loginUser($email, $password)
+    public static function loginUser($email, $password): ?self
     {
         $user = static::findOne(['email' => $email]);
 

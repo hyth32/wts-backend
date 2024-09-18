@@ -13,7 +13,7 @@ use yii\filters\VerbFilter;
 
 class PostController extends Controller
 {
-    public function behaviors()
+    public function behaviors(): array
     {
         return array_merge(
             parent::behaviors(),
@@ -24,7 +24,6 @@ class PostController extends Controller
                         'delete' => ['POST'],
 						'create' => ['POST'],
                         'update' => ['PUT'],
-                        'delete' => ['DELETE'],
                         'view' => ['GET'],
                         'index' => ['GET'],
                     ],
@@ -33,7 +32,7 @@ class PostController extends Controller
         );
     }
 
-    public function actionCreate()
+    public function actionCreate(): array
     {
     	Yii::$app->response->format = Response::FORMAT_JSON;
 
@@ -85,7 +84,7 @@ class PostController extends Controller
     	];
     }
 
-    public function actionGetPosts()
+    public function actionGetPosts(): array
     {
 		Yii::$app->response->format = Response::FORMAT_JSON;
 
@@ -123,7 +122,7 @@ class PostController extends Controller
 		];
     }
 
-	public function actionGetUserPosts($userId)
+	public function actionGetUserPosts($userId): array
 	{
 		Yii::$app->response->format = Response::FORMAT_JSON;
 
@@ -162,7 +161,7 @@ class PostController extends Controller
 		];
 	}
 
-	public function actionIndex()
+	public function actionIndex(): string
     {
 		Yii::$app->response->format = Response::FORMAT_HTML;
         $dataProvider = new ActiveDataProvider([
@@ -184,7 +183,7 @@ class PostController extends Controller
         ]);
     }
 
-    public function actionView($id)
+    public function actionView($id): string
     {
 		Yii::$app->response->format = Response::FORMAT_HTML;
  	   return $this->render('view', [
@@ -192,7 +191,7 @@ class PostController extends Controller
         ]);
     }
 
-    public function actionUpdate($id)
+    public function actionUpdate($id): string
     {
         $model = $this->findModel($id);
 
@@ -206,14 +205,14 @@ class PostController extends Controller
         ]);
     }
 
-    public function actionDelete($id)
+    public function actionDelete($id): Response
     {
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
     }
 
-    protected function findModel($id)
+    protected function findModel($id): Post
     {
         if (($model = Post::findOne(['id' => $id])) !== null)
         {

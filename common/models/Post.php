@@ -4,15 +4,16 @@ namespace common\models;
 
 use Yii;
 use yii\db\ActiveRecord;
+use yii\db\ActiveQuery;
 
 class Post extends ActiveRecord
 {
-    public static function tableName()
+    public static function tableName(): string
     {
 	    return '{{%posts}}';
     }
 
-    public function rules()
+    public function rules(): array
     {
     	return [
     	    [['text'], 'required'],
@@ -22,12 +23,12 @@ class Post extends ActiveRecord
     	];
     }
 
-    public function getUser()
+    public function getUser(): ActiveQuery
     {
     	return $this->hasOne(User::class, ['id' => 'userId']);
     }
 
-    public function beforeSave($insert)
+    public function beforeSave($insert): bool
     {
     	if ($insert)
         {
@@ -36,7 +37,7 @@ class Post extends ActiveRecord
     	return parent::beforeSave($insert);
     }
 
-    public function createPost($userId, $text)
+    public function createPost($userId, $text): ?self
     {
         $this->userId = $userId;
         $this->text = $text;

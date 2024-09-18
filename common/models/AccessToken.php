@@ -4,15 +4,16 @@ namespace common\models;
 
 use Yii;
 use yii\db\ActiveRecord;
+use yii\db\ActiveQuery;
 
 class AccessToken extends ActiveRecord
 {
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%accessTokens}}';
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
             [['userId', 'accessToken', 'expiresAt'], 'required'],
@@ -22,12 +23,12 @@ class AccessToken extends ActiveRecord
         ];
     }
 
-    public function getUser()
+    public function getUser(): ActiveQuery
     {
         return $this->hasOne(User::class, ['id' => 'userId']);
     }
 
-    public static function generateAccessToken($userId)
+    public static function generateAccessToken($userId): ?self
     {
         $accessToken = new self();
         $accessToken->userId = $userId;
@@ -42,7 +43,7 @@ class AccessToken extends ActiveRecord
         return null;
     }
 
-    public function isTokenValid()
+    public function isTokenValid(): bool
     {
         return $this && $this->expiresAt >= time();
     }

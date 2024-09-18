@@ -36,7 +36,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public function rules()
     {
-	return [
+    	return [
             [['name', 'email', 'passwordHash', 'authKey'], 'required'],
             ['email', 'email'],
             ['email', 'unique'],
@@ -57,7 +57,7 @@ class User extends ActiveRecord implements IdentityInterface
     public static function findIdentityByAccessToken($token, $type = null)
     {
        // throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
-	return static::findOne(['accessToken' => $token]);
+	    return static::findOne(['accessToken' => $token]);
     }
 
     public function getId()
@@ -112,6 +112,31 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function getAccessTokens()
     {
-	return $this->hasMany(AccessToken::class, ['userId' => 'id']);
+    	return $this->hasMany(AccessToken::class, ['userId' => 'id']);
+    }
+
+    public function registerUser($name, $email, $password)
+    {
+        $this->name = $name;
+        $this->email = $email;
+        $this->setPassword($password);
+        $this->generateAuthKey();
+
+        if ($this->save()) {
+            return $this;
+        }
+
+        return null;
+    }
+
+    public static function loginUser($email, $password)
+    {
+        $user = static::findOne(['email' => $email]);
+
+        if ($user && $user->validatePassword($password)) {
+            return $user;
+        }
+
+        return null;
     }
 }

@@ -54,12 +54,7 @@ class UserController extends Controller
         }
 
         $user = new User();
-        $user->name = $name;
-        $user->email = $email;
-        $user->setPassword($password);
-        $user->generateAuthKey();
-
-        if ($user->save()) {
+        if ($user->registerUser($name, $email, $password)) {
             $accessToken = $this->generateAccessToken($user->id);
 
             if ($accessToken) {
@@ -94,29 +89,23 @@ class UserController extends Controller
             ];
         }
 
-        $user = User::findOne(['email' => $email]);
+        $user = User::loginUser($email, $password);
 
-        if (!$user || !$user->validatePassword($password)) {
-            return [
-                'status' => 'error',
-                'message' => 'email or password are incorrect',
-            ];
-        }
+        if ($user) {
+            AccessToken::deleteAll(['userId' => $user->id]);
+            $accessToken = $this->generateAccessToken($user->id);
 
-        AccessToken::deleteAll(['userId' => $user->id]);
-
-        $accessToken = $this->generateAccessToken($user->id);
-
-        if ($accessToken) {
-            return [
-                'status' => 'success',
-                'accessToken' => $accessToken->accessToken,
-            ];
+            if ($accessToken) {
+                return [
+                    'status' => 'success',
+                    'accessToken' => $accessToken->accessToken,
+                ];
+            }
         }
 
         return [
             'status' => 'error',
-            'message' => 'failed to login',
+            'message' => 'email or password are incorrect',
             'errors' => $user->errors,
         ];
     }
@@ -176,28 +165,6 @@ class UserController extends Controller
             'model' => $this->findModel($id),
         ]);
     }
-
-    /**
-     * Creates a new User model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
-     */
-//   ` public function actionCreate()
-//    {
-//        $model = new User();
-//
-//        if ($this->request->isPost) {
-//            if ($model->load($this->request->post()) && $model->save()) {
-//                return $this->redirect(['view', 'id' => $model->id]);
-//            }
-//        } else {
-//            $model->loadDefaultValues();
-//        }
-//
-//        return $this->render('create', [
-//            'model' => $model,
-//        ]);
-//    }
 
     /**
      * Updates an existing User model.

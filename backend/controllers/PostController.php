@@ -54,7 +54,7 @@ class PostController extends Controller
     	}
 
     	$tokenRecord = AccessToken::findOne(['accessToken' => $accessToken]);
-    	if (!$tokenRecord || $tokenRecord->expiresAt < time()) {
+    	if (!$tokenRecord || !$tokenRecord->isTokenValid()) {
     	    return [
     		'status' => 'error',
     		'message' => 'invalid or expired accessToken',

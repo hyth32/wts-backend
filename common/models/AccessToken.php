@@ -40,4 +40,9 @@ class AccessToken extends ActiveRecord
 
         return null;
     }
+
+    public function isTokenValid()
+    {
+        return $this && $this->expiresAt >= time();
+    }
 }

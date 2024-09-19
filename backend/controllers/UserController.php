@@ -33,13 +33,13 @@ class UserController extends BaseController
 
             if ($user) {
                 $accessToken = $this->accessTokenService->generateAccessToken($user->getId());
-                return $this->successResponse($accessToken->accessToken, 'User registered');
+                return $this->successResponse('User registered', $accessToken->accessToken);
             }
 
-            return $this->errorResponse('failed to register', $this->userService->getErrors());
+            return $this->errorResponse('Failed to register', $this->userService->getErrors());
         }
 
-        return $this->errorResponse('name, email and password are required');
+        return $this->errorResponse('Name, email and password are required');
     }
 
     public function actionLogin(): array
@@ -53,13 +53,13 @@ class UserController extends BaseController
 
             if ($user) {
                 $accessToken = $this->accessTokenService->generateAccessToken($user->getId());
-                return $this->successResponse($accessToken->accessToken, 'login successful');
+                return $this->successResponse('Login successful', $accessToken->accessToken);
             }
 
-            return $this->errorResponse('email or password are incorrect');
+            return $this->errorResponse('Email or password are incorrect');
         }
 
-        return $this->errorResponse('email and password are required');
+        return $this->errorResponse('Email and password are required');
     }
 
     public function actionIndex(): string

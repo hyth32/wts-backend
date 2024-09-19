@@ -35,16 +35,16 @@ class PostController extends BaseController
 				$post = $this->postService->createPost($user->id, $request['text']);
 
 				if ($post) {
-					return $this->successResponse('post created!');
+					return $this->successResponse('Post created');
 				}
 
-				return $this->errorResponse('failed to create post', $this->postService->getErrors());
+				return $this->errorResponse('Failed to create post', $this->postService->getErrors());
 			}
 
-			return $this->errorResponse('user not found');
+			return $this->errorResponse('User not found');
 		}
 
-		return $this->errorResponse('accessToken and text are required');
+		return $this->errorResponse('AccessToken and text are required');
 	}
 
 	public function actionGetPosts($userId = null): array
@@ -63,7 +63,7 @@ class PostController extends BaseController
 		$posts = $query->all();
 
 		if (empty($posts)) {
-			return $this->successResponse('no posts found');
+			return $this->successResponse('No posts found');
 		}
 
 		$serializedPosts = array_map(function ($post) {
@@ -75,7 +75,7 @@ class PostController extends BaseController
 			];
 		}, $posts);
 
-		return $this->successResponse($serializedPosts);
+		return $this->successResponse('Posts found', $serializedPosts);
 	}
 
 	public function actionIndex(): string

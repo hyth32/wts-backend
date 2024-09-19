@@ -11,14 +11,16 @@ use common\models\AccessToken;
 use common\models\ApiResponse;
 use yii\data\ActiveDataProvider;
 use common\services\UserService;
+use common\services\AccessTokenService;
 
 class UserController extends Controller
 {
     protected $userService;
 
-    public function __construct($id, $module, UserService $userService, $config = [])
+    public function __construct($id, $module, UserService $userService, AccessTokenService $accessTokenService, $config = [])
     {
         $this->userService = $userService;
+        $this->accessTokenService = $accessTokenService;
         parent::__construct($id, $module, $config);
     }
 
@@ -40,7 +42,7 @@ class UserController extends Controller
             $user = $this->userService->createUser($request['name'], $request['email'], $request['password']);
 
             if ($user) {
-                $accessToken = AccessToken::generateAccessToken($user->getId());
+                $accessToken = $this->accessTokenService->generateAccessToken($user->getId());
                 return ApiResponse::success($accessToken->accessToken, 'User registered');
             }
 
@@ -61,7 +63,7 @@ class UserController extends Controller
             $user = $this->userService->loginUser($request['email'], $request['password']);
 
             if ($user) {
-                $accessToken = AccessToken::generateAccessToken($user->id);
+                $accessToken = $this->accessTokenService->generateAccessToken($user->getId());
                 return ApiResponse::success($accessToken->accessToken, 'login successful');
             }
 

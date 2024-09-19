@@ -22,44 +22,20 @@ class UserController extends BaseController
         parent::__construct($id, $module, $config);
     }
 
-    public function actionCreate(): array
+    public function actions()
     {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-
-        $request = $this->getRequestBody();
-
-        if ($this->validateCreateRequest($request)) {
-            $user = $this->userService->createUser($request['name'], $request['email'], $request['password']);
-
-            if ($user) {
-                $accessToken = $this->accessTokenService->generateAccessToken($user->getId());
-                return $this->successResponse('User registered', $accessToken->accessToken);
-            }
-
-            return $this->errorResponse('Failed to register', $this->userService->getErrors());
-        }
-
-        return $this->errorResponse('Name, email and password are required');
-    }
-
-    public function actionLogin(): array
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-
-        $request = $this->getRequestBody();
-
-        if ($this->validateLoginRequest($request)) {
-            $user = $this->userService->loginUser($request['email'], $request['password']);
-
-            if ($user) {
-                $accessToken = $this->accessTokenService->generateAccessToken($user->getId());
-                return $this->successResponse('Login successful', $accessToken->accessToken);
-            }
-
-            return $this->errorResponse('Email or password are incorrect');
-        }
-
-        return $this->errorResponse('Email and password are required');
+        return [
+            'create' => [
+                'class' => 'backend\actions\user\CreateUserAction',
+                'userService' => $this->userService,
+                'accessTokenService' => $this->accessTokenService,
+            ],
+            'login' => [
+                'class' => 'backend\actions\user\LoginUserAction',
+                'userService' => $this->userService,
+                'accessTokenService' => $this->accessTokenService,
+            ],
+        ];
     }
 
     public function actionIndex(): string
@@ -113,12 +89,12 @@ class UserController extends BaseController
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
-    private function validateCreateRequest($request): bool
+    public function validateCreateRequest($request): bool
     {
         return !empty($request['name']) && !empty($request['email']) && !empty($request['password']);
     }
 
-    private function validateLoginRequest($request): bool
+    public function validateLoginRequest($request): bool
     {
         return !empty($request['email']) && !empty($request['password']);
     }

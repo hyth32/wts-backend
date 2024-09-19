@@ -2,22 +2,16 @@
 
 namespace backend\controllers;
 
-use common\models\LoginForm;
 use Yii;
+use common\models\LoginForm;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 
-/**
- * Site controller
- */
 class SiteController extends Controller
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function behaviors()
+    public function behaviors(): array
     {
         return [
             'access' => [
@@ -43,10 +37,7 @@ class SiteController extends Controller
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function actions()
+    public function actions(): array
     {
         return [
             'error' => [
@@ -55,22 +46,12 @@ class SiteController extends Controller
         ];
     }
 
-    /**
-     * Displays homepage.
-     *
-     * @return string
-     */
-    public function actionIndex()
+    public function actionIndex(): string
     {
         return $this->render('index');
     }
 
-    /**
-     * Login action.
-     *
-     * @return string|Response
-     */
-    public function actionLogin()
+    public function actionLogin(): Response|string
     {
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
@@ -90,12 +71,7 @@ class SiteController extends Controller
         ]);
     }
 
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
+    public function actionLogout(): Response
     {
         Yii::$app->user->logout();
 

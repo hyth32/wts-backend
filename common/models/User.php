@@ -3,10 +3,8 @@
 namespace common\models;
 
 use Yii;
-use yii\base\NotSupportedException;
-use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
-use yi\db\ActiveQuery;
+use yii\db\ActiveQuery;
 use yii\web\IdentityInterface;
 
 class User extends ActiveRecord implements IdentityInterface
@@ -21,7 +19,7 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function rules(): array
     {
-    	return [
+        return [
             [['name', 'email', 'passwordHash', 'authKey', 'role'], 'required'],
             ['email', 'email'],
             ['email', 'unique'],
@@ -41,8 +39,7 @@ class User extends ActiveRecord implements IdentityInterface
 
     public static function findIdentityByAccessToken($token, $type = null): ?self
     {
-       // throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
-	    return static::findOne(['accessToken' => $token]);
+        return static::findOne(['accessToken' => $token]);
     }
 
     public function getId(): ?int
@@ -77,10 +74,10 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function getAccessTokens(): ActiveQuery
     {
-    	return $this->hasMany(AccessToken::class, ['userId' => 'id']);
+        return $this->hasMany(AccessToken::class, ['userId' => 'id']);
     }
 
-    public static function findByEmail($email)
+    public static function findByEmail($email): ?self
     {
         return static::findOne(['email' => $email]);
     }
@@ -93,8 +90,7 @@ class User extends ActiveRecord implements IdentityInterface
         $this->generateAuthKey();
         $this->role = $role;
 
-        if ($this->save())
-        {
+        if ($this->save()) {
             return $this;
         }
 
@@ -105,8 +101,7 @@ class User extends ActiveRecord implements IdentityInterface
     {
         $user = static::findByEmail($email);
 
-        if ($user && $user->validatePassword($password))
-        {
+        if ($user && $user->validatePassword($password)) {
             return $user;
         }
 

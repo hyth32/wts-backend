@@ -35,8 +35,7 @@ class AccessToken extends ActiveRecord
         $accessToken->accessToken = Yii::$app->security->generateRandomString();
         $accessToken->expiresAt = time() + 3600;
 
-        if ($accessToken->save())
-        {
+        if ($accessToken->save()) {
             return $accessToken;
         }
 

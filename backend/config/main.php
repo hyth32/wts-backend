@@ -51,8 +51,6 @@ return [
                 'api/<controller>/<action>' => '<controller>/<action>',
                 'api/<controller>/<action>/<userId:\d+>' => '<controller>/<action>',
                 'api/<controller>/<action>/<id:\d+>' => '<controller>/<action>',
-
-                '<controller>/<action>' => 'site/error',
             ],
         ],
     ],

@@ -5,13 +5,12 @@ namespace backend\controllers;
 use Yii;
 use yii\rest\Controller;
 use yii\web\Response;
+use yii\web\NotFoundHttpException;
 use common\models\User;
 use common\models\AccessToken;
 use yii\filters\VerbFilter;
-use yii\web\NotFoundHttpException;
-use yii\web\ForbiddenHttpException;
-use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
+use yii\data\ActiveDataProvider;
 
 class UserController extends Controller
 {
@@ -24,10 +23,10 @@ class UserController extends Controller
                     'class' => VerbFilter::className(),
                     'actions' => [
                         'create' => ['POST'],
-		                'update' => ['PUT'],
-        		        'delete' => ['DELETE'],
-						'view' => ['GET'],
-                		'index' => ['GET'],
+                        'update' => ['PUT'],
+                        'delete' => ['DELETE'],
+                        'view' => ['GET'],
+                        'index' => ['GET'],
                     ],
                 ],
                 'access' => [
@@ -61,8 +60,7 @@ class UserController extends Controller
         $email = $request['email'] ?? null;
         $password = $request['password'] ?? null;
 
-        if (!$name || !$email || !$password)
-        {
+        if (!$name || !$email || !$password) {
             return [
                 'status' => 'error',
                 'message' => 'name, email and password are required',
@@ -70,12 +68,10 @@ class UserController extends Controller
         }
 
         $user = new User();
-        if ($user->registerUser($name, $email, $password))
-        {
+        if ($user->registerUser($name, $email, $password)) {
             $accessToken = AccessToken::generateAccessToken($user->getId());
 
-            if ($accessToken)
-            {
+            if ($accessToken) {
                 return [
                     'status' => 'success',
                     'accessToken' => $accessToken->accessToken,
@@ -100,8 +96,7 @@ class UserController extends Controller
         $email = $request['email'] ?? null;
         $password = $request['password'] ?? null;
 
-        if (!$email || !$password)
-        {
+        if (!$email || !$password) {
             return [
                 'status' => 'error',
                 'message' => 'email and password are required',
@@ -110,13 +105,11 @@ class UserController extends Controller
 
         $user = User::loginUser($email, $password);
 
-        if ($user)
-        {
+        if ($user) {
             AccessToken::deleteAll(['userId' => $user->id]);
             $accessToken = AccessToken::generateAccessToken($user->id);
 
-            if ($accessToken)
-            {
+            if ($accessToken) {
                 return [
                     'status' => 'success',
                     'accessToken' => $accessToken->accessToken,
@@ -133,7 +126,7 @@ class UserController extends Controller
 
     public function actionIndex(): string
     {
-		Yii::$app->response->format = Response::FORMAT_HTML;
+        Yii::$app->response->format = Response::FORMAT_HTML;
 
         $dataProvider = new ActiveDataProvider([
             'query' => User::find(),
@@ -146,18 +139,17 @@ class UserController extends Controller
 
     public function actionView($id): string
     {
-		Yii::$app->response->format = Response::FORMAT_HTML;
+        Yii::$app->response->format = Response::FORMAT_HTML;
         return $this->render('view', [
             'model' => $this->findModel($id),
         ]);
     }
 
-    public function actionUpdate($id): string
+    public function actionUpdate($id): Response|string
     {
         $model = $this->findModel($id);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save())
-        {
+        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -175,8 +167,7 @@ class UserController extends Controller
 
     protected function findModel($id): User
     {
-        if (($model = User::findOne(['id' => $id])) !== null)
-        {
+        if (($model = User::findOne(['id' => $id])) !== null) {
             return $model;
         }
 

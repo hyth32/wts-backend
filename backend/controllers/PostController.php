@@ -7,103 +7,98 @@ use yii\rest\Controller;
 use common\models\Post;
 use common\models\AccessToken;
 use yii\web\Response;
-use yii\data\ActiveDataProvider;
 use yii\web\NotFoundHttpException;
-use yii\web\ForbiddenHttpException;
+use yii\data\ActiveDataProvider;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 
 class PostController extends Controller
 {
-    public function behaviors(): array
-    {
-        return array_merge(
-            parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'delete' => ['POST'],
+	public function behaviors(): array
+	{
+		return array_merge(
+			parent::behaviors(),
+			[
+				'verbs' => [
+					'class' => VerbFilter::className(),
+					'actions' => [
+						'delete' => ['POST'],
 						'create' => ['POST'],
-                        'update' => ['PUT'],
-                        'view' => ['GET'],
-                        'index' => ['GET'],
-                    ],
-                ],
-                'access' => [
-                    'class' => AccessControl::class,
-                    'only' => ['index', 'view', 'update', 'delete'],
-                    'rules' => [
-                        [
-                            'allow' => true,
-                            'roles' => ['@'],
-                            'matchCallback' => function ($rule, $action) {
-                                return Yii::$app->user->identity->isAdmin();
-                            },
-                        ],
-                        [
-                            'allow' => false,
-                        ],
-                    ],
-                ],
-            ]
-        );
-    }
+						'update' => ['PUT'],
+						'view' => ['GET'],
+						'index' => ['GET'],
+					],
+				],
+				'access' => [
+					'class' => AccessControl::class,
+					'only' => ['index', 'view', 'update', 'delete'],
+					'rules' => [
+						[
+							'allow' => true,
+							'roles' => ['@'],
+							'matchCallback' => function ($rule, $action) {
+								return Yii::$app->user->identity->isAdmin();
+							},
+						],
+						[
+							'allow' => false,
+						],
+					],
+				],
+			]
+		);
+	}
 
-    public function actionCreate(): array
-    {
-    	Yii::$app->response->format = Response::FORMAT_JSON;
+	public function actionCreate(): array
+	{
+		Yii::$app->response->format = Response::FORMAT_JSON;
 
-    	$requestBody = Yii::$app->request->getRawBody();
-    	$request = json_decode($requestBody, true);
+		$requestBody = Yii::$app->request->getRawBody();
+		$request = json_decode($requestBody, true);
 
-    	$accessToken = $request['accessToken'] ?? null;
-    	$text = $request['text'] ?? null;
+		$accessToken = $request['accessToken'] ?? null;
+		$text = $request['text'] ?? null;
 
-    	if (!$accessToken || !$text)
-        {
-    	    return [
-        		'status' => 'error',
-        		'message' => 'accessToken and text are required',
-    	    ];
-    	}
+		if (!$accessToken || !$text) {
+			return [
+				'status' => 'error',
+				'message' => 'accessToken and text are required',
+			];
+		}
 
-    	$tokenRecord = AccessToken::findOne(['accessToken' => $accessToken]);
-    	if (!$tokenRecord || !$tokenRecord->isTokenValid())
-        {
-    	    return [
-        		'status' => 'error',
-        		'message' => 'invalid or expired accessToken',
-    	    ];
-    	}
+		$tokenRecord = AccessToken::findOne(['accessToken' => $accessToken]);
+		if (!$tokenRecord || !$tokenRecord->isTokenValid()) {
+			return [
+				'status' => 'error',
+				'message' => 'invalid or expired accessToken',
+			];
+		}
 
-    	$user = $tokenRecord->user;
-    	if (!$user)
-        {
-    	    return [
-        		'status' => 'error',
-    	    	'message' => 'user not found',
-    	    ];
-    	}
+		$user = $tokenRecord->user;
+		if (!$user) {
+			return [
+				'status' => 'error',
+				'message' => 'user not found',
+			];
+		}
 
-    	$post = new Post();
-    	if ($post->createPost($user->id, $request['text']))
-        {
-    	    return [
-    		    'status' => 'success',
-    		    'message' => 'post created!',
-    	    ];
-    	}
+		$post = new Post();
+		if ($post->createPost($user->id, $request['text'])) {
+			return [
+				'status' => 'success',
+				'message' => 'post created!',
+			];
+		}
 
-    	return [
-    	    'success' => 'false',
-    	    'message' => 'failed to create post',
-    	    'errors' => $post->errors,
-    	];
-    }
+		return [
+			'success' => 'false',
+			'message' => 'failed to create post',
+			'errors' => $post->errors,
+		];
+	}
 
-    public function actionGetPosts(): array
-    {
+	public function actionGetPosts(): array
+	{
 		Yii::$app->response->format = Response::FORMAT_JSON;
 
 		$limit = Yii::$app->request->get('limit', 10); //default 10
@@ -115,30 +110,28 @@ class PostController extends Controller
 			->orderBy(['createdAt' => SORT_ASC])
 			->all();
 
-		if (empty($posts))
-        {
+		if (empty($posts)) {
 			return [
 				'status' => 'success',
 				'data' => [],
 				'message' => 'no posts found',
-	   		];
+			];
 		}
 
-		$serializedPosts = array_map(function ($post)
-        {
-	    	return [
+		$serializedPosts = array_map(function ($post) {
+			return [
 				'id' => $post->id,
 				'userId' => $post->userId,
 				'text' => $post->text,
 				'createdAt' => date('Y-m-d H:i:s', $post->createdAt),
-	    	];
+			];
 		}, $posts);
 
 		return [
-	    	'status' => 'success',
-		    'data' => $serializedPosts,
+			'status' => 'success',
+			'data' => $serializedPosts,
 		];
-    }
+	}
 
 	public function actionGetUserPosts($userId): array
 	{
@@ -154,8 +147,7 @@ class PostController extends Controller
 			->orderBy(['createdAt' => SORT_ASC])
 			->all();
 
-		if (empty($posts))
-        {
+		if (empty($posts)) {
 			return [
 				'status' => 'success',
 				'data' => [],
@@ -163,8 +155,7 @@ class PostController extends Controller
 			];
 		}
 
-		$serializedPosts = array_map(function ($post)
-        {
+		$serializedPosts = array_map(function ($post) {
 			return [
 				'id' => $post->id,
 				'userId' => $post->userId,
@@ -180,55 +171,53 @@ class PostController extends Controller
 	}
 
 	public function actionIndex(): string
-    {
-    	Yii::$app->response->format = Response::FORMAT_HTML;
-
-        $dataProvider = new ActiveDataProvider([
-            'query' => Post::find(),
-        ]);
-
-        return $this->render('index', [
-            'dataProvider' => $dataProvider,
-        ]);
-    }
-
-    public function actionView($id): string
-    {
+	{
 		Yii::$app->response->format = Response::FORMAT_HTML;
- 	   return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);
-    }
 
-    public function actionUpdate($id): string
-    {
-        $model = $this->findModel($id);
+		$dataProvider = new ActiveDataProvider([
+			'query' => Post::find(),
+		]);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save())
-        {
-            return $this->redirect(['view', 'id' => $model->id]);
-        }
+		return $this->render('index', [
+			'dataProvider' => $dataProvider,
+		]);
+	}
 
-        return $this->render('update', [
-            'model' => $model,
-        ]);
-    }
+	public function actionView($id): string
+	{
+		Yii::$app->response->format = Response::FORMAT_HTML;
+		return $this->render('view', [
+			'model' => $this->findModel($id),
+		]);
+	}
 
-    public function actionDelete($id): Response
-    {
-        $this->findModel($id)->delete();
+	public function actionUpdate($id): Response|string
+	{
+		$model = $this->findModel($id);
 
-        return $this->redirect(['index']);
-    }
+		if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
+			return $this->redirect(['view', 'id' => $model->id]);
+		}
 
-    protected function findModel($id): Post
-    {
-        if (($model = Post::findOne(['id' => $id])) !== null)
-        {
-            return $model;
-        }
+		return $this->render('update', [
+			'model' => $model,
+		]);
+	}
 
-        throw new NotFoundHttpException('The requested page does not exist.');
-    }
+	public function actionDelete($id): Response
+	{
+		$this->findModel($id)->delete();
+
+		return $this->redirect(['index']);
+	}
+
+	protected function findModel($id): Post
+	{
+		if (($model = Post::findOne(['id' => $id])) !== null) {
+			return $model;
+		}
+
+		throw new NotFoundHttpException('The requested page does not exist.');
+	}
 }
 

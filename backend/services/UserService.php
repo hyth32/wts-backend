@@ -1,6 +1,6 @@
 <?php
 
-namespace common\services;
+namespace backend\services;
 
 use common\models\User;
 use common\models\AccessToken;

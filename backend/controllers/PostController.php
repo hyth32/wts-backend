@@ -7,8 +7,8 @@ use common\models\Post;
 use yii\web\Response;
 use yii\web\NotFoundHttpException;
 use yii\data\ActiveDataProvider;
-use common\services\PostService;
-use common\services\AccessTokenService;
+use backend\services\PostService;
+use backend\services\AccessTokenService;
 
 class PostController extends BaseController
 {
@@ -22,29 +22,15 @@ class PostController extends BaseController
 		parent::__construct($id, $module, $config);
 	}
 
-	public function actionCreate(): array
+	public function actions()
 	{
-		Yii::$app->response->format = Response::FORMAT_JSON;
-
-		$request = $this->getRequestBody();
-
-		if ($this->validatePostRequest($request)) {
-			$user = $this->accessTokenService->getUserFromToken($request['accessToken']);
-
-			if ($user) {
-				$post = $this->postService->createPost($user->id, $request['text']);
-
-				if ($post) {
-					return $this->successResponse('Post created');
-				}
-
-				return $this->errorResponse('Failed to create post', $this->postService->getErrors());
-			}
-
-			return $this->errorResponse('User not found');
-		}
-
-		return $this->errorResponse('AccessToken and text are required');
+		return [
+			'create' => [
+				'class' => 'backend\actions\post\CreatePostAction',
+				'postService' => $this->postService,
+				'accessTokenService' => $this->accessTokenService,
+			],
+		];
 	}
 
 	public function actionGetPosts($userId = null): array

@@ -1,6 +1,6 @@
 <?php
 
-namespace common\services;
+namespace backend\services;
 
 use Yii;
 use common\models\AccessToken;

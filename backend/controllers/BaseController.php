@@ -16,18 +16,18 @@ class BaseController extends Controller
         );
     }
 
-    protected function getRequestBody(): array
+    public function getRequestBody(): array
     {
         $requestBody = Yii::$app->request->getRawBody();
-        return json_decode($requestBody, true);
+        return json_decode($requestBody, true) ?? [];
     }
 
-    protected function successResponse($message, $data = []): array
+    public function successResponse($message, $data = []): array
     {
         return ApiResponse::success($message, $data);
     }
 
-    protected function errorResponse($message, $errors = []): array
+    public function errorResponse($message, $errors = []): array
     {
         return ApiResponse::error($message, $errors);
     }

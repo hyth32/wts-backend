@@ -7,8 +7,8 @@ use yii\web\Response;
 use yii\web\NotFoundHttpException;
 use common\models\User;
 use yii\data\ActiveDataProvider;
-use common\services\UserService;
-use common\services\AccessTokenService;
+use backend\services\UserService;
+use backend\services\AccessTokenService;
 
 class UserController extends BaseController
 {

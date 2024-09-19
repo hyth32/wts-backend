@@ -3,18 +3,14 @@
 namespace backend\controllers;
 
 use Yii;
-use yii\rest\Controller;
 use common\models\Post;
-use common\models\User;
-use common\models\AccessToken;
-use common\models\ApiResponse;
 use yii\web\Response;
 use yii\web\NotFoundHttpException;
 use yii\data\ActiveDataProvider;
 use common\services\PostService;
 use common\services\AccessTokenService;
 
-class PostController extends Controller
+class PostController extends BaseController
 {
 	private $postService;
 	private $accessTokenService;
@@ -26,20 +22,11 @@ class PostController extends Controller
 		parent::__construct($id, $module, $config);
 	}
 
-	public function behaviors(): array
-	{
-		return array_merge(
-			parent::behaviors(),
-			Yii::$app->params['controllerBehaviors'],
-		);
-	}
-
 	public function actionCreate(): array
 	{
 		Yii::$app->response->format = Response::FORMAT_JSON;
 
-		$requestBody = Yii::$app->request->getRawBody();
-		$request = json_decode($requestBody, true);
+		$request = $this->getRequestBody();
 
 		if ($this->validatePostRequest($request)) {
 			$user = $this->accessTokenService->getUserFromToken($request['accessToken']);
@@ -48,16 +35,16 @@ class PostController extends Controller
 				$post = $this->postService->createPost($user->id, $request['text']);
 
 				if ($post) {
-					return ApiResponse::success('post created!');
+					return $this->successResponse('post created!');
 				}
 
-				return ApiResponse::error('failed to create post', $post->errors);
+				return $this->errorResponse('failed to create post', $post->errors);
 			}
 
-			return ApiResponse::error('user not found');
+			return $this->errorResponse('user not found');
 		}
 
-		return ApiResponse::error('accessToken and text are required');
+		return $this->errorResponse('accessToken and text are required');
 	}
 
 	public function actionGetPosts($userId = null): array
@@ -76,7 +63,7 @@ class PostController extends Controller
 		$posts = $query->all();
 
 		if (empty($posts)) {
-			return ApiResponse::success('no posts found');
+			return $this->successResponse('no posts found');
 		}
 
 		$serializedPosts = array_map(function ($post) {
@@ -88,7 +75,7 @@ class PostController extends Controller
 			];
 		}, $posts);
 
-		return ApiResponse::success($serializedPosts);
+		return $this->successResponse($serializedPosts);
 	}
 
 	public function actionIndex(): string

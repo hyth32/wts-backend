@@ -4,7 +4,7 @@ namespace common\models;
 
 class ApiResponse
 {
-    public static function success($data = [], $message = "OK"): array
+    public static function success($message = "OK", $data = []): array
     {
         return [
             'status' => 'success',

@@ -3,19 +3,17 @@
 namespace backend\controllers;
 
 use Yii;
-use yii\rest\Controller;
 use yii\web\Response;
 use yii\web\NotFoundHttpException;
 use common\models\User;
-use common\models\AccessToken;
-use common\models\ApiResponse;
 use yii\data\ActiveDataProvider;
 use common\services\UserService;
 use common\services\AccessTokenService;
 
-class UserController extends Controller
+class UserController extends BaseController
 {
     protected $userService;
+    protected $accessTokenService;
 
     public function __construct($id, $module, UserService $userService, AccessTokenService $accessTokenService, $config = [])
     {
@@ -24,53 +22,44 @@ class UserController extends Controller
         parent::__construct($id, $module, $config);
     }
 
-    public function behaviors(): array
-    {
-        return array_merge(
-            parent::behaviors(),
-            Yii::$app->params['controllerBehaviors'],
-        );
-    }
     public function actionCreate(): array
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
 
-        $requestBody = Yii::$app->request->getRawBody();
-        $request = json_decode($requestBody, true);
+        $request = $this->getRequestBody();
 
         if ($this->validateCreateRequest($request)) {
             $user = $this->userService->createUser($request['name'], $request['email'], $request['password']);
 
             if ($user) {
                 $accessToken = $this->accessTokenService->generateAccessToken($user->getId());
-                return ApiResponse::success($accessToken->accessToken, 'User registered');
+                return $this->successResponse($accessToken->accessToken, 'User registered');
             }
 
-            return ApiResponse::error('failed to register', $user->errors);
+            return $this->errorResponse('failed to register', $user->errors);
         }
 
-        return ApiResponse::error('name, email and password are required');
+        return $this->errorResponse('name, email and password are required');
     }
 
     public function actionLogin(): array
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
 
-        $requestBody = Yii::$app->request->getRawBody();
-        $request = json_decode($requestBody, true);
+        $request = $this->getRequestBody();
 
         if ($this->validateLoginRequest($request)) {
             $user = $this->userService->loginUser($request['email'], $request['password']);
 
             if ($user) {
                 $accessToken = $this->accessTokenService->generateAccessToken($user->getId());
-                return ApiResponse::success($accessToken->accessToken, 'login successful');
+                return $this->successResponse($accessToken->accessToken, 'login successful');
             }
 
-            return ApiResponse::error('email or password are incorrect', $user->errors);
+            return $this->errorResponse('email or password are incorrect', $user->errors);
         }
 
-        return ApiResponse::error('email and password are required');
+        return $this->errorResponse('email and password are required');
     }
 
     public function actionIndex(): string

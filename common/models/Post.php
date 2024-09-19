@@ -34,16 +34,4 @@ class Post extends ActiveRecord
         }
         return parent::beforeSave($insert);
     }
-
-    public function createPost($userId, $text): ?self
-    {
-        $this->userId = $userId;
-        $this->text = $text;
-
-        if ($this->save()) {
-            return $this;
-        }
-
-        return null;
-    }
 }

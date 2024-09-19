@@ -5,14 +5,24 @@ namespace backend\controllers;
 use Yii;
 use yii\rest\Controller;
 use common\models\Post;
+use common\models\User;
 use common\models\AccessToken;
 use common\models\ApiResponse;
 use yii\web\Response;
 use yii\web\NotFoundHttpException;
 use yii\data\ActiveDataProvider;
+use common\services\PostService;
 
 class PostController extends Controller
 {
+	private $postService;
+
+	public function __construct($id, $module, PostService $postService, $config = [])
+	{
+		$this->postService = $postService;
+		parent::__construct($id, $module, $config);
+	}
+
 	public function behaviors(): array
 	{
 		return array_merge(
@@ -28,29 +38,23 @@ class PostController extends Controller
 		$requestBody = Yii::$app->request->getRawBody();
 		$request = json_decode($requestBody, true);
 
-		$accessToken = $request['accessToken'] ?? null;
-		$text = $request['text'] ?? null;
+		if ($this->validatePostRequest($request)) {
+			$user = $this->getUserFromToken($request['accessToken']);
 
-		if (!$accessToken || !$text) {
-			return ApiResponse::error('accessToken and text are required');
-		}
+			if ($user) {
+				$post = $this->postService->createPost($user->id, $request['text']);
 
-		$tokenRecord = AccessToken::findOne(['accessToken' => $accessToken]);
-		if (!$tokenRecord || !$tokenRecord->isTokenValid()) {
-			return ApiResponse::error('invalid or expired accessToken');
-		}
+				if ($post) {
+					return ApiResponse::success('post created!');
+				}
 
-		$user = $tokenRecord->user;
-		if (!$user) {
+				return ApiResponse::error('failed to create post', $post->errors);
+			}
+
 			return ApiResponse::error('user not found');
 		}
 
-		$post = new Post();
-		if ($post->createPost($user->id, $request['text'])) {
-			return ApiResponse::success('post created!');
-		}
-
-		return ApiResponse::error('failed to create post', $post->errors);
+		return ApiResponse::error('accessToken and text are required');
 	}
 
 	public function actionGetPosts(): array
@@ -160,6 +164,19 @@ class PostController extends Controller
 		}
 
 		throw new NotFoundHttpException('The requested page does not exist.');
+	}
+
+	private function validatePostRequest($request): bool
+	{
+		return !empty($request['accessToken']) && !empty($request['text']);
+	}
+
+	private function getUserFromToken($accessToken): ?User
+	{
+		$tokenRecord = AccessToken::findOne(['accessToken' => $accessToken]);
+		if ($tokenRecord && $tokenRecord->isTokenValid()) {
+			return $tokenRecord->user;
+		}
 	}
 }
 

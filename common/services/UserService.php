@@ -16,11 +16,7 @@ class UserService
         $user->generateAuthKey();
         $user->role = $role;
 
-        if ($user->save()) {
-            return $user;
-        }
-
-        return null;
+        return $user->save() ? $user : null;
     }
 
     public function loginUser($email, $password): ?User

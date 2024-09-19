@@ -6,6 +6,7 @@ use Yii;
 use yii\rest\Controller;
 use common\models\Post;
 use common\models\AccessToken;
+use common\models\ApiResponse;
 use yii\web\Response;
 use yii\web\NotFoundHttpException;
 use yii\data\ActiveDataProvider;
@@ -31,41 +32,25 @@ class PostController extends Controller
 		$text = $request['text'] ?? null;
 
 		if (!$accessToken || !$text) {
-			return [
-				'status' => 'error',
-				'message' => 'accessToken and text are required',
-			];
+			return ApiResponse::error('accessToken and text are required');
 		}
 
 		$tokenRecord = AccessToken::findOne(['accessToken' => $accessToken]);
 		if (!$tokenRecord || !$tokenRecord->isTokenValid()) {
-			return [
-				'status' => 'error',
-				'message' => 'invalid or expired accessToken',
-			];
+			return ApiResponse::error('invalid or expired accessToken');
 		}
 
 		$user = $tokenRecord->user;
 		if (!$user) {
-			return [
-				'status' => 'error',
-				'message' => 'user not found',
-			];
+			return ApiResponse::error('user not found');
 		}
 
 		$post = new Post();
 		if ($post->createPost($user->id, $request['text'])) {
-			return [
-				'status' => 'success',
-				'message' => 'post created!',
-			];
+			return ApiResponse::success('post created!');
 		}
 
-		return [
-			'success' => 'false',
-			'message' => 'failed to create post',
-			'errors' => $post->errors,
-		];
+		return ApiResponse::error('failed to create post', $post->errors);
 	}
 
 	public function actionGetPosts(): array
@@ -82,11 +67,7 @@ class PostController extends Controller
 			->all();
 
 		if (empty($posts)) {
-			return [
-				'status' => 'success',
-				'data' => [],
-				'message' => 'no posts found',
-			];
+			return ApiResponse::success('no posts found');
 		}
 
 		$serializedPosts = array_map(function ($post) {
@@ -98,10 +79,7 @@ class PostController extends Controller
 			];
 		}, $posts);
 
-		return [
-			'status' => 'success',
-			'data' => $serializedPosts,
-		];
+		return ApiResponse::success($serializedPosts);
 	}
 
 	public function actionGetUserPosts($userId): array
@@ -119,11 +97,7 @@ class PostController extends Controller
 			->all();
 
 		if (empty($posts)) {
-			return [
-				'status' => 'success',
-				'data' => [],
-				'message' => 'no posts found',
-			];
+			return ApiResponse::success('no posts found');
 		}
 
 		$serializedPosts = array_map(function ($post) {
@@ -135,10 +109,7 @@ class PostController extends Controller
 			];
 		}, $posts);
 
-		return [
-			'status' => 'success',
-			'data' => $serializedPosts,
-		];
+		return ApiResponse::success($serializedPosts);
 	}
 
 	public function actionIndex(): string

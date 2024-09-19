@@ -8,8 +8,7 @@ use yii\web\Response;
 use yii\web\NotFoundHttpException;
 use common\models\User;
 use common\models\AccessToken;
-use yii\filters\VerbFilter;
-use yii\filters\AccessControl;
+use common\models\ApiResponse;
 use yii\data\ActiveDataProvider;
 
 class UserController extends Controller
@@ -33,10 +32,7 @@ class UserController extends Controller
         $password = $request['password'] ?? null;
 
         if (!$name || !$email || !$password) {
-            return [
-                'status' => 'error',
-                'message' => 'name, email and password are required',
-            ];
+            return ApiResponse::error('name, email and password are required');
         }
 
         $user = new User();
@@ -44,18 +40,11 @@ class UserController extends Controller
             $accessToken = AccessToken::generateAccessToken($user->getId());
 
             if ($accessToken) {
-                return [
-                    'status' => 'success',
-                    'accessToken' => $accessToken->accessToken,
-                ];
+                return ApiResponse::success($accessToken->access, 'user registered');
             }
         }
 
-        return [
-            'status' => 'error',
-            'message' => 'failed to register',
-            'errors' => $user->errors,
-        ];
+        return ApiResponse::error('failed to register', $user->errors);
     }
 
     public function actionLogin(): array
@@ -69,10 +58,7 @@ class UserController extends Controller
         $password = $request['password'] ?? null;
 
         if (!$email || !$password) {
-            return [
-                'status' => 'error',
-                'message' => 'email and password are required',
-            ];
+            return ApiResponse::error('email and password are required');
         }
 
         $user = User::loginUser($email, $password);
@@ -82,18 +68,11 @@ class UserController extends Controller
             $accessToken = AccessToken::generateAccessToken($user->id);
 
             if ($accessToken) {
-                return [
-                    'status' => 'success',
-                    'accessToken' => $accessToken->accessToken,
-                ];
+                return ApiResponse::success($accessToken->accessToken, 'login successful');
             }
         }
 
-        return [
-            'status' => 'error',
-            'message' => 'email or password are incorrect',
-            'errors' => $user->errors,
-        ];
+        return ApiResponse::error('email or password are incorrect', $user->errors);
     }
 
     public function actionIndex(): string

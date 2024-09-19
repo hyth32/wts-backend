@@ -10,9 +10,18 @@ use common\models\User;
 use common\models\AccessToken;
 use common\models\ApiResponse;
 use yii\data\ActiveDataProvider;
+use common\services\UserService;
 
 class UserController extends Controller
 {
+    protected $userService;
+
+    public function __construct($id, $module, UserService $userService, $config = [])
+    {
+        $this->userService = $userService;
+        parent::__construct($id, $module, $config);
+    }
+
     public function behaviors(): array
     {
         return array_merge(
@@ -28,8 +37,9 @@ class UserController extends Controller
         $request = json_decode($requestBody, true);
 
         if ($this->validateCreateRequest($request)) {
-            $user = new User();
-            if ($user->registerUser($request['name'], $request['email'], $request['password'])) {
+            $user = $this->userService->createUser($request['name'], $request['email'], $request['password']);
+
+            if ($user) {
                 $accessToken = AccessToken::generateAccessToken($user->getId());
                 return ApiResponse::success($accessToken->accessToken, 'User registered');
             }
@@ -47,13 +57,11 @@ class UserController extends Controller
         $requestBody = Yii::$app->request->getRawBody();
         $request = json_decode($requestBody, true);
 
-        if (isset($request['email'], $request['password'])) {
-            $user = User::loginUser($request['email'], $request['password']);
+        if ($this->validateLoginRequest($request)) {
+            $user = $this->userService->loginUser($request['email'], $request['password']);
 
             if ($user) {
-                AccessToken::deleteAll(['userId' => $user->id]);
                 $accessToken = AccessToken::generateAccessToken($user->id);
-
                 return ApiResponse::success($accessToken->accessToken, 'login successful');
             }
 
@@ -79,6 +87,7 @@ class UserController extends Controller
     public function actionView($id): string
     {
         Yii::$app->response->format = Response::FORMAT_HTML;
+
         return $this->render('view', [
             'model' => $this->findModel($id),
         ]);
@@ -116,5 +125,10 @@ class UserController extends Controller
     private function validateCreateRequest($request): bool
     {
         return !empty($request['name']) && !empty($request['email']) && !empty($request['password']);
+    }
+
+    private function validateLoginRequest($request): bool
+    {
+        return !empty($request['email']) && !empty($request['password']);
     }
 }

@@ -4,6 +4,7 @@ namespace common\services;
 
 use Yii;
 use common\models\AccessToken;
+use common\models\User;
 
 class AccessTokenService
 {
@@ -20,5 +21,15 @@ class AccessTokenService
     public function isTokenValid(AccessToken $accessToken): bool
     {
         return $accessToken->expiresAt >= time();
+    }
+
+    public function getUserFromToken($accessToken): ?User
+    {
+        $tokenRecord = AccessToken::findOne(['accessToken' => $accessToken]);
+        if ($tokenRecord && $this->isTokenValid($tokenRecord)) {
+            return $tokenRecord->user;
+        }
+
+        return null;
     }
 }

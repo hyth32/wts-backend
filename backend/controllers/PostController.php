@@ -40,26 +40,13 @@ class PostController extends BaseController
 		$limit = Yii::$app->request->get('limit', 10); //default 10
 		$offset = Yii::$app->request->get('offset', 0);
 
-		$query = Post::find()->limit($limit)->offset($offset)->orderBy(['createdAt' => SORT_ASC]);
-
-		if ($userId) {
-			$query->where(['userId' => $userId]);
-		}
-
-		$posts = $query->all();
+		$posts = $this->postService->getPosts($userId, $limit, $offset);
 
 		if (empty($posts)) {
 			return $this->successResponse('No posts found');
 		}
 
-		$serializedPosts = array_map(function ($post) {
-			return [
-				'id' => $post->id,
-				'userId' => $post->userId,
-				'text' => $post->text,
-				'createdAt' => date('Y-m-d H:i:s', $post->createdAt),
-			];
-		}, $posts);
+		$serializedPosts = $this->postService->serializePosts($posts);
 
 		return $this->successResponse('Posts found', $serializedPosts);
 	}

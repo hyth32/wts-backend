@@ -57,48 +57,20 @@ class PostController extends Controller
 		return ApiResponse::error('accessToken and text are required');
 	}
 
-	public function actionGetPosts(): array
+	public function actionGetPosts($userId = null): array
 	{
 		Yii::$app->response->format = Response::FORMAT_JSON;
 
 		$limit = Yii::$app->request->get('limit', 10); //default 10
 		$offset = Yii::$app->request->get('offset', 0);
 
-		$posts = Post::find()
-			->limit($limit)
-			->offset($offset)
-			->orderBy(['createdAt' => SORT_ASC])
-			->all();
+		$query = Post::find()->limit($limit)->offset($offset)->orderBy(['createdAt' => SORT_ASC]);
 
-		if (empty($posts)) {
-			return ApiResponse::success('no posts found');
+		if ($userId) {
+			$query->where(['userId' => $userId]);
 		}
 
-		$serializedPosts = array_map(function ($post) {
-			return [
-				'id' => $post->id,
-				'userId' => $post->userId,
-				'text' => $post->text,
-				'createdAt' => date('Y-m-d H:i:s', $post->createdAt),
-			];
-		}, $posts);
-
-		return ApiResponse::success($serializedPosts);
-	}
-
-	public function actionGetUserPosts($userId): array
-	{
-		Yii::$app->response->format = Response::FORMAT_JSON;
-
-		$limit = Yii::$app->request->get('limit', 10);
-		$offset = Yii::$app->request->get('offset', 0);
-
-		$posts = Post::find()
-			->where(['userId' => $userId])
-			->limit($limit)
-			->offset($offset)
-			->orderBy(['createdAt' => SORT_ASC])
-			->all();
+		$posts = $query->all();
 
 		if (empty($posts)) {
 			return ApiResponse::success('no posts found');

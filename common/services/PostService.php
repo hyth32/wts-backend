@@ -6,12 +6,24 @@ use common\models\Post;
 
 class PostService
 {
+    private $errors = [];
+
     public function createPost($userId, $text): ?Post
     {
         $post = new Post();
         $post->userId = $userId;
         $post->text = $text;
 
-        return $post->save() ? $post : null;
+        if ($post->save()) {
+            return $post;
+        }
+
+        $this->errors[] = $post->errors;
+        return null;
+    }
+
+    public function getErrors(): array
+    {
+        return $this->errors;
     }
 }

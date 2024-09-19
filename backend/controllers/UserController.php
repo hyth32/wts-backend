@@ -36,7 +36,7 @@ class UserController extends BaseController
                 return $this->successResponse($accessToken->accessToken, 'User registered');
             }
 
-            return $this->errorResponse('failed to register', $user->errors);
+            return $this->errorResponse('failed to register', $this->userService->getErrors());
         }
 
         return $this->errorResponse('name, email and password are required');
@@ -56,7 +56,7 @@ class UserController extends BaseController
                 return $this->successResponse($accessToken->accessToken, 'login successful');
             }
 
-            return $this->errorResponse('email or password are incorrect', $user->errors);
+            return $this->errorResponse('email or password are incorrect');
         }
 
         return $this->errorResponse('email and password are required');

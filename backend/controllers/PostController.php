@@ -38,7 +38,7 @@ class PostController extends BaseController
 					return $this->successResponse('post created!');
 				}
 
-				return $this->errorResponse('failed to create post', $post->errors);
+				return $this->errorResponse('failed to create post', $this->postService->getErrors());
 			}
 
 			return $this->errorResponse('user not found');

@@ -30,25 +30,11 @@ class PostController extends BaseController
 				'postService' => $this->postService,
 				'accessTokenService' => $this->accessTokenService,
 			],
+			'get-posts' => [
+				'class' => 'backend\actions\post\GetPostsAction',
+				'postService' => $this->postService,
+			],
 		];
-	}
-
-	public function actionGetPosts($userId = null): array
-	{
-		Yii::$app->response->format = Response::FORMAT_JSON;
-
-		$limit = Yii::$app->request->get('limit', 10); //default 10
-		$offset = Yii::$app->request->get('offset', 0);
-
-		$posts = $this->postService->getPosts($userId, $limit, $offset);
-
-		if (empty($posts)) {
-			return $this->successResponse('No posts found');
-		}
-
-		$serializedPosts = $this->postService->serializePosts($posts);
-
-		return $this->successResponse('Posts found', $serializedPosts);
 	}
 
 	public function actionIndex(): string

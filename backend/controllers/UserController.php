@@ -18,37 +18,9 @@ class UserController extends Controller
     {
         return array_merge(
             parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'create' => ['POST'],
-                        'update' => ['PUT'],
-                        'delete' => ['DELETE'],
-                        'view' => ['GET'],
-                        'index' => ['GET'],
-                    ],
-                ],
-                'access' => [
-                    'class' => AccessControl::class,
-                    'only' => ['index', 'view', 'update', 'delete'],
-                    'rules' => [
-                        [
-                            'allow' => true,
-                            'roles' => ['@'],
-                            'matchCallback' => function ($rule, $action) {
-                                return Yii::$app->user->identity->isAdmin();
-                            },
-                        ],
-                        [
-                            'allow' => false,
-                        ],
-                    ],
-                ],
-            ]
+            Yii::$app->params['controllerBehaviors'],
         );
     }
-
     public function actionCreate(): array
     {
         Yii::$app->response->format = Response::FORMAT_JSON;

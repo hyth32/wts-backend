@@ -9,8 +9,6 @@ use common\models\AccessToken;
 use yii\web\Response;
 use yii\web\NotFoundHttpException;
 use yii\data\ActiveDataProvider;
-use yii\filters\VerbFilter;
-use yii\filters\AccessControl;
 
 class PostController extends Controller
 {
@@ -18,34 +16,7 @@ class PostController extends Controller
 	{
 		return array_merge(
 			parent::behaviors(),
-			[
-				'verbs' => [
-					'class' => VerbFilter::className(),
-					'actions' => [
-						'delete' => ['POST'],
-						'create' => ['POST'],
-						'update' => ['PUT'],
-						'view' => ['GET'],
-						'index' => ['GET'],
-					],
-				],
-				'access' => [
-					'class' => AccessControl::class,
-					'only' => ['index', 'view', 'update', 'delete'],
-					'rules' => [
-						[
-							'allow' => true,
-							'roles' => ['@'],
-							'matchCallback' => function ($rule, $action) {
-								return Yii::$app->user->identity->isAdmin();
-							},
-						],
-						[
-							'allow' => false,
-						],
-					],
-				],
-			]
+			Yii::$app->params['controllerBehaviors'],
 		);
 	}
 

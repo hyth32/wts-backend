@@ -27,24 +27,17 @@ class UserController extends Controller
         $requestBody = Yii::$app->request->getRawBody();
         $request = json_decode($requestBody, true);
 
-        $name = $request['name'] ?? null;
-        $email = $request['email'] ?? null;
-        $password = $request['password'] ?? null;
-
-        if (!$name || !$email || !$password) {
-            return ApiResponse::error('name, email and password are required');
-        }
-
-        $user = new User();
-        if ($user->registerUser($name, $email, $password)) {
-            $accessToken = AccessToken::generateAccessToken($user->getId());
-
-            if ($accessToken) {
-                return ApiResponse::success($accessToken->access, 'user registered');
+        if ($this->validateCreateRequest($request)) {
+            $user = new User();
+            if ($user->registerUser($request['name'], $request['email'], $request['password'])) {
+                $accessToken = AccessToken::generateAccessToken($user->getId());
+                return ApiResponse::success($accessToken->accessToken, 'User registered');
             }
+
+            return ApiResponse::error('failed to register', $user->errors);
         }
 
-        return ApiResponse::error('failed to register', $user->errors);
+        return ApiResponse::error('name, email and password are required');
     }
 
     public function actionLogin(): array
@@ -54,25 +47,20 @@ class UserController extends Controller
         $requestBody = Yii::$app->request->getRawBody();
         $request = json_decode($requestBody, true);
 
-        $email = $request['email'] ?? null;
-        $password = $request['password'] ?? null;
+        if (isset($request['email'], $request['password'])) {
+            $user = User::loginUser($request['email'], $request['password']);
 
-        if (!$email || !$password) {
-            return ApiResponse::error('email and password are required');
-        }
+            if ($user) {
+                AccessToken::deleteAll(['userId' => $user->id]);
+                $accessToken = AccessToken::generateAccessToken($user->id);
 
-        $user = User::loginUser($email, $password);
-
-        if ($user) {
-            AccessToken::deleteAll(['userId' => $user->id]);
-            $accessToken = AccessToken::generateAccessToken($user->id);
-
-            if ($accessToken) {
                 return ApiResponse::success($accessToken->accessToken, 'login successful');
             }
+
+            return ApiResponse::error('email or password are incorrect', $user->errors);
         }
 
-        return ApiResponse::error('email or password are incorrect', $user->errors);
+        return ApiResponse::error('email and password are required');
     }
 
     public function actionIndex(): string
@@ -123,5 +111,10 @@ class UserController extends Controller
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    private function validateCreateRequest($request): bool
+    {
+        return !empty($request['name']) && !empty($request['email']) && !empty($request['password']);
     }
 }
